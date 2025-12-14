@@ -1,44 +1,46 @@
-import pandas as pd 
+import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
-# Load dataset
-df = pd.read_csv(r"D:\new\books.csv")  # <-- full path
+df = pd.read_csv("books.csv")
 
-# Show first few rows
-print("\n📌 FIRST 5 ROWS:")
-print(df.head())
+# Clean Price column (robust)
+df["Price"] = (
+    df["Price"]
+    .astype(str)
+    .str.replace(r"[^\d.]", "", regex=True)
+)
+df["Price"] = pd.to_numeric(df["Price"], errors="coerce")
 
-# Basic info
-print("\n📌 DATA INFO:")
-print(df.info())
+# Clean Availability
+df["Availability"] = df["Availability"].astype(str).str.strip()
 
-# Summary statistics
-print("\n📌 SUMMARY STATISTICS:")
-print(df.describe())
+# PRICE ANALYSIS
+print("Average Price:", df["Price"].mean())
+print("Minimum Price:", df["Price"].min())
+print("Maximum Price:", df["Price"].max())
 
-# Check for missing values
-print("\n📌 MISSING VALUES:")
-print(df.isnull().sum())
+# ================== VISUALS ==================
 
-# Price distribution
-plt.figure(figsize=(8,5))
-sns.histplot(df["price"], bins=15, kde=True)
-plt.title("Book Price Distribution")
+# Histogram
+plt.figure()
+plt.hist(df["Price"].dropna(), bins=20)
+plt.title("Distribution of Book Prices")
 plt.xlabel("Price (£)")
+plt.ylabel("Frequency")
+plt.show()
+
+# Boxplot
+plt.figure()
+plt.boxplot(df["Price"].dropna())
+plt.title("Box Plot of Book Prices")
+plt.ylabel("Price (£)")
+plt.show()
+
+# Availability bar chart
+plt.figure()
+df["Availability"].value_counts().plot(kind="bar")
+plt.title("Book Availability")
+plt.xlabel("Status")
 plt.ylabel("Count")
 plt.show()
 
-# Boxplot for outliers
-plt.figure(figsize=(6,4))
-sns.boxplot(x=df["price"])
-plt.title("Price Outlier Detection")
-plt.show()
-
-# Top 5 most expensive books
-print("\n📌 TOP 5 MOST EXPENSIVE BOOKS:")
-print(df.sort_values("price", ascending=False).head())
-
-# Cheapest 5 books
-print("\n📌 TOP 5 CHEAPEST BOOKS:")
-print(df.sort_values("price", ascending=True).head())
